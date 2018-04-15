@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=no">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/pdf.worker.js"></script>
+</head>
+<body>
+    <div style="margin:0 auto;width:400px;">
+        <canvas id="pdf-canvas" width="400" style="border:1px solid #ddd;"></canvas>
+        <div style="border:1px solid #ddd;text-align:center;">
+            <button id="pdf-prev">上一页</button>
+            <button id="pdf-next">下一页</button>
+            <div>
+                第<b id="pdf-current-page"></b>页，
+                共<b id="pdf-total-pages"></b>页
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var pdfDoc,
+            currentPage,
+            totalPage,
+            canvas = $('#pdf-canvas').get(0),
+            canvasContext = canvas.getContext('2d')
+        url = "http.pdf";
+
+        showPDF(url);
+
+        //显示pdf
+        function showPDF(pdf_url) {
+            PDFJS.getDocument({ url: pdf_url }).then(function (pdf_doc) {
+                pdfDoc = pdf_doc;
+                totalPage = pdf_doc.numPages;
+                $("#pdf-total-pages").text(totalPage);
+                showPage(1);
+            }).catch(function (error) {
+                alert(error.message);
+            });;
+        }
+
+        //分页
+        function showPage(page_no) {
+            currentPage = page_no;
+            $("#pdf-next, #pdf-prev").attr('disabled', 'disabled');
+            $("#pdf-current-page").text(page_no);
+
+            pdfDoc.getPage(page_no).then(function (page) {
+                var scale_required = canvas.width / page.getViewport(1).width;
+                var viewport = page.getViewport(scale_required);
+                canvas.height = viewport.height;
+                var renderContext = {
+                    canvasContext: canvasContext,
+                    viewport: viewport
+                };
+                page.render(renderContext).then(function () {
+                    $("#pdf-next, #pdf-prev").removeAttr('disabled');
+                });
+            });
+        }
+
+        //上一页
+        $("#pdf-prev").on('click', function () {
+            if (currentPage != 1)
+                showPage(--currentPage);
+        });
+
+        //下一页
+        $("#pdf-next").on('click', function () {
+            if (currentPage != totalPage)
+                showPage(++currentPage);
+        });
+    </script>
+</body>
+</html>
