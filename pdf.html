@@ -26,20 +26,25 @@
             totalPage,
             canvas = $('#pdf-canvas').get(0),
             canvasContext = canvas.getContext('2d')
-        url = "http.pdf";
+        url = "地下工程建设安全面临的挑战与对策.pdf";
 
         showPDF(url);
 
         //显示pdf
         function showPDF(pdf_url) {
-            PDFJS.getDocument({ url: pdf_url }).then(function (pdf_doc) {
-                pdfDoc = pdf_doc;
-                totalPage = pdf_doc.numPages;
-                $("#pdf-total-pages").text(totalPage);
-                showPage(1);
-            }).catch(function (error) {
-                alert(error.message);
-            });;
+            pdfjsLib.getDocument({
+                url: pdf_url,
+                cMapPacked: true,
+                cMapUrl: '/cmaps/'
+            })
+                .then(function (pdf_doc) {
+                    pdfDoc = pdf_doc;
+                    totalPage = pdf_doc.numPages;
+                    $("#pdf-total-pages").text(totalPage);
+                    showPage(1);
+                }).catch(function (error) {
+                    alert(error.message);
+                });;
         }
 
         //分页
